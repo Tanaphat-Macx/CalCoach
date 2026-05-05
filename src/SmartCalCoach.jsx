@@ -8,7 +8,7 @@ const ACTIVITY_LEVELS = [
 ];
 
 const GOALS = [
-  { value: "fat_loss", label: "ลดไขมัน", sub: "Fat Loss", emoji: "🔥", deficit: 400, proteinMultiplier: 1.6 },
+  { value: "fat_loss", label: "ลดไขมัน", sub: "Fat Loss", emoji: "🔥", deficit: 400, proteinMultiplier: 1.8 },
   { value: "recomp", label: "รักษากล้าม", sub: "Recomp", emoji: "⚖️", deficit: 350, proteinMultiplier: 2.0 },
   { value: "bulk", label: "สร้างกล้าม", sub: "Bulk", emoji: "💪", deficit: -300, proteinMultiplier: 2.2 },
 ];
