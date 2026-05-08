@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const GOALS = [
   { value: "fat_loss", label: "ลดไขมัน",   sub: "Fat Loss", emoji: "🔥", deficit: 500,  proteinMult: 1.8 },
@@ -112,10 +112,14 @@ export default function SmartCalCoach() {
   });
   const [weightInput, setWeightInput] = useState("");
   const [saved, setSaved] = useState(false);
-  const [logs, setLogs] = useState([
-    { d:"03/05", w:86.0 }, { d:"04/05", w:86.2 },
-    { d:"05/05", w:86.1 }, { d:"06/05", w:85.9 },
-  ]);
+  const [logs, setLogs] = useState(() => {
+  try { return JSON.parse(localStorage.getItem("wt_logs") || "[]"); }
+  catch { return []; }
+});
+
+useEffect(() => {
+  localStorage.setItem("wt_logs", JSON.stringify(logs));
+}, [logs]);
 
   const set = k => e => setForm(f => ({...f, [k]: e.target.value}));
 
