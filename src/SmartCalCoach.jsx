@@ -106,10 +106,20 @@ const SEC = { fontSize:10, color:"#5a8fa8", fontWeight:700, letterSpacing:1, tex
 export default function SmartCalCoach() {
   const [tab, setTab] = useState("calc");
   const [nutTab, setNutTab] = useState("meals");
-  const [form, setForm] = useState({
-    weight:"86", height:"176", gender:"male", age:"28",
-    activity:"very", bodyFat:"17.8", goal:"recomp", isTraining:true,
-  });
+  const [form, setForm] = useState(() => {
+  try {
+    const saved = localStorage.getItem("sc_form");
+    return saved ? JSON.parse(saved) : {
+      weight:"", height:"", gender:"male", age:"",
+      activity:"sedentary", bodyFat:"", goal:"recomp", isTraining:true,
+    };
+  } catch {
+    return {
+      weight:"", height:"", gender:"male", age:"",
+      activity:"sedentary", bodyFat:"", goal:"recomp", isTraining:true,
+    };
+  }
+});
   const [weightInput, setWeightInput] = useState("");
   const [saved, setSaved] = useState(false);
   const [logs, setLogs] = useState(() => {
@@ -120,6 +130,10 @@ export default function SmartCalCoach() {
 useEffect(() => {
   localStorage.setItem("wt_logs", JSON.stringify(logs));
 }, [logs]);
+
+useEffect(() => {
+  localStorage.setItem("sc_form", JSON.stringify(form));
+}, [form]);
 
   const set = k => e => setForm(f => ({...f, [k]: e.target.value}));
 
