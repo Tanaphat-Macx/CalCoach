@@ -41,7 +41,7 @@ function calcMacros(goal, target, w, isTraining) {
 function calcFoodGuide(macros, weight) {
   const riceCooked = Math.round(macros.carb / 0.28);
   const riceScoops = +(riceCooked / 150).toFixed(1);
-  const meatG = Math.round(macros.protein / 0.30);
+  const meatG = Math.round(macros.protein / 0.20);
   const meatHandfuls = +(meatG / 150).toFixed(1);
   const oilG = Math.round(macros.fat * 0.4);
   const oilTbsp = +(oilG / 14).toFixed(1);
