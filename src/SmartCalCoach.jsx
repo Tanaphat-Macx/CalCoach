@@ -145,6 +145,19 @@ export default function SmartCalCoach() {
     return { meat:0, rice:0, oil:0, almond:0, water:0 };
   });
 
+  const [foodLogs, setFoodLogs] = useState(() => {
+    try {
+      const ls = JSON.parse(localStorage.getItem("food_logs") || "[]");
+      const prev = JSON.parse(localStorage.getItem("food_consumed") || "{}");
+      if (prev.date && prev.date !== todayStr() && prev.consumed) {
+        const d = prev.date.slice(0,5);
+        if (!ls.find(l => l.d === d))
+          return [...ls, { d, ...prev.consumed }].slice(-30);
+      }
+      return ls;
+    } catch { return []; }
+  });
+
 useEffect(() => {
   localStorage.setItem("wt_logs", JSON.stringify(logs));
 }, [logs]);
@@ -158,9 +171,20 @@ useEffect(() => {
 }, [foodConsumed]);
 
 useEffect(() => {
+  localStorage.setItem("food_logs", JSON.stringify(foodLogs));
+}, [foodLogs]);
+
+useEffect(() => {
   const now = new Date();
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
   const t = setTimeout(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("food_consumed") || "{}");
+      if (saved.consumed) {
+        const d = (saved.date || todayStr()).slice(0,5);
+        setFoodLogs(prev => [...prev.filter(l => l.d !== d), { d, ...saved.consumed }].slice(-30));
+      }
+    } catch {}
     setFoodConsumed({ meat:0, rice:0, oil:0, almond:0, water:0 });
   }, midnight - now);
   return () => clearTimeout(t);
@@ -414,6 +438,29 @@ useEffect(() => {
               ))}
             </div>
           </div>
+
+          {foodLogs.length > 0 && (
+            <div style={CARD}>
+              <div style={SEC}>บันทึกการกิน</div>
+              <div style={{ display:"grid", gridTemplateColumns:"44px 1fr 1fr 1fr 1fr", gap:4, paddingBottom:8, borderBottom:"1px solid #1e3a50", marginBottom:2 }}>
+                <div/>
+                {["เนื้อ","ข้าว","ไขมัน","น้ำ"].map(h => (
+                  <div key={h} style={{ fontSize:9, color:"#5a8fa8", fontWeight:700, textAlign:"center", textTransform:"uppercase" }}>{h}</div>
+                ))}
+              </div>
+              <div style={{ maxHeight:200, overflowY:"auto" }}>
+                {[...foodLogs].reverse().map((l,i) => (
+                  <div key={l.d} style={{ display:"grid", gridTemplateColumns:"44px 1fr 1fr 1fr 1fr", gap:4, padding:"7px 0", borderBottom:i<foodLogs.length-1?"1px solid #1e3a50":"none", alignItems:"center" }}>
+                    <span style={{ fontSize:11, color:"#8fa8b8" }}>{l.d}</span>
+                    <span style={{ fontSize:13, fontWeight:700, color:"#f87171", textAlign:"center" }}>{l.meat}</span>
+                    <span style={{ fontSize:13, fontWeight:700, color:"#fbbf24", textAlign:"center" }}>{l.rice}</span>
+                    <span style={{ fontSize:13, fontWeight:700, color:"#34d399", textAlign:"center" }}>{l.oil}</span>
+                    <span style={{ fontSize:13, fontWeight:700, color:"#38bdf8", textAlign:"center" }}>{(l.water/1000).toFixed(1)}L</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>}
       </div>
     </div>
