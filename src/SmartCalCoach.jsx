@@ -61,6 +61,28 @@ function avg7(logs, idx) {
   return +(slice.reduce((s,l) => s+l.w, 0) / slice.length).toFixed(2);
 }
 
+// ── Food Tracker ─────────────────────────────────────────────────────────────
+function FoodTracker({ trackKey, trackTarget, trackStep, trackUnit, consumed, onAdd, accentColor }) {
+  const remaining = Math.max(0, trackTarget - consumed);
+  const pct = Math.min(100, (consumed / trackTarget) * 100);
+  const done = consumed >= trackTarget;
+  return (
+    <div style={{ marginTop:10, borderTop:"1px solid #f0f0f0", paddingTop:10 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, marginBottom:4 }}>
+        <span style={{ color:"#888" }}>กินแล้ว <b style={{ color:accentColor }}>{consumed}{trackUnit}</b></span>
+        <span style={{ color:"#888" }}>เหลือ <b style={{ color:done?"#16a34a":"#1a1a1a" }}>{remaining}{trackUnit}</b>{done?" ✓":""}</span>
+      </div>
+      <div style={{ height:5, background:"#f0f0f0", borderRadius:99, overflow:"hidden", marginBottom:8 }}>
+        <div style={{ width:`${pct}%`, height:"100%", background:done?"#22c55e":accentColor, borderRadius:99, transition:"width .2s" }}/>
+      </div>
+      <div style={{ display:"flex", gap:6 }}>
+        <button onClick={() => onAdd(trackKey, -trackStep)} style={{ flex:1, background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:8, padding:"5px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Sarabun',sans-serif", color:"#64748b" }}>−{trackStep}{trackUnit}</button>
+        <button onClick={() => onAdd(trackKey, trackStep)} style={{ flex:1, background:"#dcfce7", border:"1px solid #86efac", borderRadius:8, padding:"5px 0", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Sarabun',sans-serif", color:"#15803d" }}>+{trackStep}{trackUnit}</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Weight Chart ──────────────────────────────────────────────────────────────
 function WeightChart({ logs }) {
   if (logs.length < 2) return (
@@ -127,6 +149,14 @@ export default function SmartCalCoach() {
   catch { return []; }
 });
 
+  const [foodConsumed, setFoodConsumed] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("food_consumed") || "{}");
+      if (saved.date === todayStr()) return saved.consumed;
+    } catch {}
+    return { meat:0, rice:0, oil:0, almond:0, water:0 };
+  });
+
 useEffect(() => {
   localStorage.setItem("wt_logs", JSON.stringify(logs));
 }, [logs]);
@@ -135,7 +165,12 @@ useEffect(() => {
   localStorage.setItem("sc_form", JSON.stringify(form));
 }, [form]);
 
+useEffect(() => {
+  localStorage.setItem("food_consumed", JSON.stringify({ date:todayStr(), consumed:foodConsumed }));
+}, [foodConsumed]);
+
   const set = k => e => setForm(f => ({...f, [k]: e.target.value}));
+  const addConsumed = (key, delta) => setFoodConsumed(prev => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }));
 
   const result = (() => {
     if (!form.weight || !form.height || !form.age) return null;
@@ -309,11 +344,15 @@ useEffect(() => {
             {nutTab === "guide" && (() => {
               const g = result.foodGuide;
               const cards = [
-                { icon:"🥩", title:"เนื้อสัตว์ (ชั่งดิบ)", border:"#f97316", badge:"#fff7ed", badgeText:"#ea580c", big:`${g.meatG}g`, sub:`≈ ${g.meatHandfuls} ฝ่ามือ`, items:null },
-                { icon:"🍚", title:"ข้าวสวยหุงสุก", border:"#eab308", badge:"#fefce8", badgeText:"#ca8a04", big:`${g.riceCooked}g`, sub:`≈ ${g.riceScoops} ทัพพี`, items:null },
+                { icon:"🥩", title:"เนื้อสัตว์ (ชั่งดิบ)", border:"#f97316", badge:"#fff7ed", badgeText:"#ea580c", big:`${g.meatG}g`, sub:`≈ ${g.meatHandfuls} ฝ่ามือ`, items:null, trackKey:"meat", trackTarget:g.meatG, trackStep:25, trackUnit:"g" },
+                { icon:"🍚", title:"ข้าวสวยหุงสุก", border:"#eab308", badge:"#fefce8", badgeText:"#ca8a04", big:`${g.riceCooked}g`, sub:`≈ ${g.riceScoops} ทัพพี`, items:null, trackKey:"rice", trackTarget:g.riceCooked, trackStep:50, trackUnit:"g" },
                 { icon:"🫒", title:"ไขมันดี", border:"#22c55e", badge:null, badgeText:"#16a34a", big:null, sub:null,
-                  items:[{ label:"น้ำมันมะกอก / รำข้าว", val:`${g.oilG}g ≈ ${g.oilTbsp} ช้อน` }, { label:"อัลมอนด์อบ", val:`${g.almondG}g ≈ ${g.almondPcs} เม็ด` }] },
-                { icon:"💧", title:"น้ำดื่มต่อวัน", border:"#38bdf8", badge:"#f0f9ff", badgeText:"#0284c7", big:`${g.waterL} ลิตร`, sub:`≈ ${g.waterCups} แก้ว (250ml)`, items:null },
+                  items:[
+                    { label:"น้ำมันมะกอก / รำข้าว", val:`${g.oilG}g ≈ ${g.oilTbsp} ช้อน`, trackKey:"oil", trackTarget:g.oilG, trackStep:5, trackUnit:"g" },
+                    { label:"อัลมอนด์อบ", val:`${g.almondG}g ≈ ${g.almondPcs} เม็ด`, trackKey:"almond", trackTarget:g.almondG, trackStep:6, trackUnit:"g" },
+                  ]
+                },
+                { icon:"💧", title:"น้ำดื่มต่อวัน", border:"#38bdf8", badge:"#f0f9ff", badgeText:"#0284c7", big:`${g.waterL} ลิตร`, sub:`≈ ${g.waterCups} แก้ว (250ml)`, items:null, trackKey:"water", trackTarget:Math.round(g.waterL*1000), trackStep:250, trackUnit:"ml" },
               ];
               return (
                 <div>
@@ -327,7 +366,20 @@ useEffect(() => {
                         <div style={{ fontSize:40, fontWeight:800, color:"#1a1a1a", lineHeight:1 }}>{c.big}</div>
                         <div style={{ marginTop:6, display:"inline-block", background:c.badge, borderRadius:20, padding:"3px 12px", fontSize:12, color:c.badgeText, fontWeight:600 }}>{c.sub}</div>
                       </>}
-                      {c.items && <div style={{ display:"flex", flexDirection:"column", gap:6 }}>{c.items.map((item,ii) => <div key={ii} style={{ display:"flex", justifyContent:"space-between", background:"#f0fdf4", borderRadius:8, padding:"8px 10px" }}><span style={{ fontSize:12, color:"#333" }}>{item.label}</span><span style={{ fontSize:12, fontWeight:700, color:c.badgeText }}>{item.val}</span></div>)}</div>}
+                      {c.items && (
+                        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                          {c.items.map((item,ii) => (
+                            <div key={ii}>
+                              <div style={{ display:"flex", justifyContent:"space-between", background:"#f0fdf4", borderRadius:8, padding:"8px 10px" }}>
+                                <span style={{ fontSize:12, color:"#333" }}>{item.label}</span>
+                                <span style={{ fontSize:12, fontWeight:700, color:c.badgeText }}>{item.val}</span>
+                              </div>
+                              <FoodTracker trackKey={item.trackKey} trackTarget={item.trackTarget} trackStep={item.trackStep} trackUnit={item.trackUnit} consumed={foodConsumed[item.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {c.trackKey && <FoodTracker trackKey={c.trackKey} trackTarget={c.trackTarget} trackStep={c.trackStep} trackUnit={c.trackUnit} consumed={foodConsumed[c.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>}
                     </div>
                   ))}
                   <div style={{ textAlign:"center", fontSize:11, color:"#5a8fa8", lineHeight:1.8, paddingBottom:8 }}>ตัวเลขถูกปัดเศษเพื่อเตรียมอาหารได้ง่าย · ผักใบเขียวได้ไม่อั้น · ประเมินผลทุก 2 สัปดาห์</div>
