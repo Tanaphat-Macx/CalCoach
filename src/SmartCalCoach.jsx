@@ -460,7 +460,7 @@ useEffect(() => {
                       <span style={{ fontSize:11, color: l.isToday?"#2dd4bf":"#8fa8b8", fontWeight: l.isToday?700:400 }}>{l.d}</span>
                       <span style={{ fontSize:13, fontWeight:700, color:"#f87171", textAlign:"center" }}>{l.meat}</span>
                       <span style={{ fontSize:13, fontWeight:700, color:"#fbbf24", textAlign:"center" }}>{l.rice}</span>
-                      <span style={{ fontSize:13, fontWeight:700, color:"#34d399", textAlign:"center" }}>{l.oil}</span>
+                      <span style={{ fontSize:13, fontWeight:700, color:"#34d399", textAlign:"center" }}>{l.oil || l.almond}</span>
                       <span style={{ fontSize:13, fontWeight:700, color:"#38bdf8", textAlign:"center" }}>{(l.water/1000).toFixed(1)}L</span>
                     </div>
                   ))}
