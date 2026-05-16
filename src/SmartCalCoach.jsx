@@ -309,51 +309,54 @@ useEffect(() => {
               ))}
             </div>
             {/* Food Guide */}
-            {(() => {
-              const g = result.foodGuide;
-              const cards = [
-                { icon:"🥩", title:"เนื้อสัตว์ (ชั่งดิบ)", border:"#f97316", badge:"#fff7ed", badgeText:"#ea580c", big:`${g.meatG}g`, sub:`≈ ${g.meatHandfuls} ฝ่ามือ`, items:null, trackKey:"meat", trackTarget:g.meatG, trackStep:25, trackUnit:"g" },
-                { icon:"🍚", title:"ข้าวสวยหุงสุก", border:"#eab308", badge:"#fefce8", badgeText:"#ca8a04", big:`${g.riceCooked}g`, sub:`≈ ${g.riceScoops} ทัพพี`, items:null, trackKey:"rice", trackTarget:g.riceCooked, trackStep:50, trackUnit:"g" },
-                { icon:"🫒", title:"ไขมันดี", border:"#22c55e", badge:null, badgeText:"#16a34a", big:null, sub:null,
-                  items:[
-                    { label:"น้ำมันมะกอก / รำข้าว", val:`${g.oilG}g ≈ ${g.oilTbsp} ช้อน`, trackKey:"oil", trackTarget:g.oilG, trackStep:5, trackUnit:"g" },
-                    { label:"อัลมอนด์อบ", val:`${g.almondG}g ≈ ${g.almondPcs} เม็ด`, trackKey:"almond", trackTarget:g.almondG, trackStep:6, trackUnit:"g" },
-                  ]
-                },
-                { icon:"💧", title:"น้ำดื่มต่อวัน", border:"#38bdf8", badge:"#f0f9ff", badgeText:"#0284c7", big:`${g.waterL} ลิตร`, sub:`≈ ${g.waterCups} แก้ว (250ml)`, items:null, trackKey:"water", trackTarget:Math.round(g.waterL*1000), trackStep:250, trackUnit:"ml" },
-              ];
-              return (
-                <div>
-                  {cards.map((c,ci) => (
-                    <div key={ci} style={{ background:"#fff", borderRadius:16, padding:"16px 14px", border:`2px solid ${c.border}`, marginBottom:12 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-                        <div style={{ width:36, height:36, borderRadius:9, background:c.badge||"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{c.icon}</div>
-                        <span style={{ fontWeight:700, fontSize:14, color:"#1a1a1a" }}>{c.title}{c.title==="ไขมันดี"&&<span style={{ fontSize:10, color:"#999", fontWeight:400 }}> (เลือกอย่างหนึ่ง)</span>}</span>
-                      </div>
-                      {c.big && <>
-                        <div style={{ fontSize:40, fontWeight:800, color:"#1a1a1a", lineHeight:1 }}>{c.big}</div>
-                        <div style={{ marginTop:6, display:"inline-block", background:c.badge, borderRadius:20, padding:"3px 12px", fontSize:12, color:c.badgeText, fontWeight:600 }}>{c.sub}</div>
-                      </>}
-                      {c.items && (
-                        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                          {c.items.map((item,ii) => (
-                            <div key={ii}>
-                              <div style={{ display:"flex", justifyContent:"space-between", background:"#f0fdf4", borderRadius:8, padding:"8px 10px" }}>
-                                <span style={{ fontSize:12, color:"#333" }}>{item.label}</span>
-                                <span style={{ fontSize:12, fontWeight:700, color:c.badgeText }}>{item.val}</span>
-                              </div>
-                              <FoodTracker trackKey={item.trackKey} trackTarget={item.trackTarget} trackStep={item.trackStep} trackUnit={item.trackUnit} consumed={foodConsumed[item.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>
-                            </div>
-                          ))}
+            <div style={{ ...CARD, marginTop:12 }}>
+              <div style={SEC}>เป้าหมายการกิน</div>
+              {(() => {
+                const g = result.foodGuide;
+                const cards = [
+                  { icon:"🥩", title:"เนื้อสัตว์ (ชั่งดิบ)", border:"#f97316", badge:"#fff7ed", badgeText:"#ea580c", big:`${g.meatG}g`, sub:`≈ ${g.meatHandfuls} ฝ่ามือ`, items:null, trackKey:"meat", trackTarget:g.meatG, trackStep:25, trackUnit:"g" },
+                  { icon:"🍚", title:"ข้าวสวยหุงสุก", border:"#eab308", badge:"#fefce8", badgeText:"#ca8a04", big:`${g.riceCooked}g`, sub:`≈ ${g.riceScoops} ทัพพี`, items:null, trackKey:"rice", trackTarget:g.riceCooked, trackStep:50, trackUnit:"g" },
+                  { icon:"🫒", title:"ไขมันดี", border:"#22c55e", badge:null, badgeText:"#16a34a", big:null, sub:null,
+                    items:[
+                      { label:"น้ำมันมะกอก / รำข้าว", val:`${g.oilG}g ≈ ${g.oilTbsp} ช้อน`, trackKey:"oil", trackTarget:g.oilG, trackStep:5, trackUnit:"g" },
+                      { label:"อัลมอนด์อบ", val:`${g.almondG}g ≈ ${g.almondPcs} เม็ด`, trackKey:"almond", trackTarget:g.almondG, trackStep:6, trackUnit:"g" },
+                    ]
+                  },
+                  { icon:"💧", title:"น้ำดื่มต่อวัน", border:"#38bdf8", badge:"#f0f9ff", badgeText:"#0284c7", big:`${g.waterL} ลิตร`, sub:`≈ ${g.waterCups} แก้ว (250ml)`, items:null, trackKey:"water", trackTarget:Math.round(g.waterL*1000), trackStep:250, trackUnit:"ml" },
+                ];
+                return (
+                  <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                    {cards.map((c,ci) => (
+                      <div key={ci} style={{ background:"#fff", borderRadius:14, padding:"14px 12px", border:`2px solid ${c.border}` }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+                          <div style={{ width:34, height:34, borderRadius:8, background:c.badge||"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>{c.icon}</div>
+                          <span style={{ fontWeight:700, fontSize:13, color:"#1a1a1a" }}>{c.title}{c.title==="ไขมันดี"&&<span style={{ fontSize:10, color:"#999", fontWeight:400 }}> (เลือกอย่างหนึ่ง)</span>}</span>
                         </div>
-                      )}
-                      {c.trackKey && <FoodTracker trackKey={c.trackKey} trackTarget={c.trackTarget} trackStep={c.trackStep} trackUnit={c.trackUnit} consumed={foodConsumed[c.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>}
-                    </div>
-                  ))}
-                  <div style={{ textAlign:"center", fontSize:11, color:"#5a8fa8", lineHeight:1.8, paddingBottom:8 }}>ตัวเลขถูกปัดเศษเพื่อเตรียมอาหารได้ง่าย · ผักใบเขียวได้ไม่อั้น · ประเมินผลทุก 2 สัปดาห์</div>
-                </div>
-              );
-            })()}
+                        {c.big && <>
+                          <div style={{ fontSize:36, fontWeight:800, color:"#1a1a1a", lineHeight:1 }}>{c.big}</div>
+                          <div style={{ marginTop:6, display:"inline-block", background:c.badge, borderRadius:20, padding:"3px 12px", fontSize:12, color:c.badgeText, fontWeight:600 }}>{c.sub}</div>
+                        </>}
+                        {c.items && (
+                          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                            {c.items.map((item,ii) => (
+                              <div key={ii}>
+                                <div style={{ display:"flex", justifyContent:"space-between", background:"#f0fdf4", borderRadius:8, padding:"8px 10px" }}>
+                                  <span style={{ fontSize:12, color:"#333" }}>{item.label}</span>
+                                  <span style={{ fontSize:12, fontWeight:700, color:c.badgeText }}>{item.val}</span>
+                                </div>
+                                <FoodTracker trackKey={item.trackKey} trackTarget={item.trackTarget} trackStep={item.trackStep} trackUnit={item.trackUnit} consumed={foodConsumed[item.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {c.trackKey && <FoodTracker trackKey={c.trackKey} trackTarget={c.trackTarget} trackStep={c.trackStep} trackUnit={c.trackUnit} consumed={foodConsumed[c.trackKey]} onAdd={addConsumed} accentColor={c.badgeText}/>}
+                      </div>
+                    ))}
+                    <div style={{ textAlign:"center", fontSize:11, color:"#5a8fa8", lineHeight:1.8, paddingTop:4 }}>ตัวเลขถูกปัดเศษเพื่อเตรียมอาหารได้ง่าย · ผักใบเขียวได้ไม่อั้น · ประเมินผลทุก 2 สัปดาห์</div>
+                  </div>
+                );
+              })()}
+            </div>
           </>}
         </>}
 
