@@ -13,17 +13,6 @@ const ACTIVITY = [
   { value: "very",      label: "หนักมาก 6–7 วัน — Very Active", mult: 1.725 },
 ];
 
-const MEAL_TEMPLATES = {
-  fat_loss: [{ name:"มื้อเช้า", pct:25 }, { name:"มื้อกลางวัน", pct:35 }, { name:"มื้อเย็น", pct:30 }, { name:"ว่างระหว่างวัน", pct:10 }],
-  recomp:   [{ name:"มื้อเช้า", pct:25 }, { name:"มื้อกลางวัน", pct:30 }, { name:"ก่อนเทรน", pct:20 }, { name:"หลังเทรน", pct:15 }, { name:"ก่อนนอน", pct:10 }],
-  bulk:     [{ name:"มื้อเช้า", pct:25 }, { name:"มื้อกลางวัน", pct:30 }, { name:"Pre-Workout", pct:15 }, { name:"มื้อเย็น", pct:25 }, { name:"ก่อนนอน", pct:5 }],
-};
-
-const FOOD_SUGGESTIONS = {
-  fat_loss: ["ข้าวกล้อง + ไก่อกย่าง + ผักสด", "ไข่ต้ม 3 ฟอง + สลัดผัก", "ปลาทูนึ่ง + บร็อคโคลี่ + ข้าวกล้อง", "กรีกโยเกิร์ต + เบอร์รี่"],
-  recomp:   ["สมูทตี้อกไก่ + โอ๊ต + กล้วย + เวย์", "อกไก่ 150g + ข้าว 200g + ผัก", "ขนมปังซาวโดว์ + เนยถั่ว + กล้วย", "เวย์ + ข้าว/กล้วย หลังเทรน", "ไข่ต้ม 3 ฟอง + ถั่วอบ"],
-  bulk:     ["ข้าวขาว + เนื้อวัว + ไข่ดาว", "สมูทตี้กล้วย + นมโปรตีน", "ข้าว + ปลาแซลมอน + อะโวคาโด", "ข้าวโอ๊ต + นม + ผลไม้", "ข้าว + อกไก่ + ไข่ขาว"],
-};
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function calcBMR(w, h, age, gender) {
@@ -127,7 +116,6 @@ const SEC = { fontSize:10, color:"#5a8fa8", fontWeight:700, letterSpacing:1, tex
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function SmartCalCoach() {
   const [tab, setTab] = useState("calc");
-  const [nutTab, setNutTab] = useState("meals");
   const [form, setForm] = useState(() => {
   try {
     const saved = localStorage.getItem("sc_form");
@@ -169,6 +157,15 @@ useEffect(() => {
   localStorage.setItem("food_consumed", JSON.stringify({ date:todayStr(), consumed:foodConsumed }));
 }, [foodConsumed]);
 
+useEffect(() => {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+  const t = setTimeout(() => {
+    setFoodConsumed({ meat:0, rice:0, oil:0, almond:0, water:0 });
+  }, midnight - now);
+  return () => clearTimeout(t);
+}, []);
+
   const set = k => e => setForm(f => ({...f, [k]: e.target.value}));
   const addConsumed = (key, delta) => setFoodConsumed(prev => ({ ...prev, [key]: Math.max(0, prev[key] + delta) }));
 
@@ -182,9 +179,8 @@ useEffect(() => {
     const target = Math.max(1200, tdee - g.deficit);
     const macros = calcMacros(form.goal, target, w, form.isTraining);
     const foodGuide = calcFoodGuide(macros, w);
-    const meals = MEAL_TEMPLATES[form.goal].map(m => ({...m, kcal: Math.round(target * m.pct / 100)}));
     const deficit = tdee - target;
-    return { bmr:Math.round(bmr), tdee, target, macros, foodGuide, meals, deficit, bmi:(w/((h/100)**2)).toFixed(1) };
+    return { bmr:Math.round(bmr), tdee, target, macros, foodGuide, deficit, bmi:(w/((h/100)**2)).toFixed(1) };
   })();
 
   const handleSaveWeight = () => {
@@ -312,36 +308,8 @@ useEffect(() => {
                 </div>
               ))}
             </div>
-            {/* ── Nutrition sub-tabs ต่อจาก stats ── */}
-            <div style={{ display:"flex", gap:5, background:"#0d1b26", borderRadius:12, padding:4, marginTop:12, marginBottom:12 }}>
-              {[{id:"meals",label:"📋 มื้ออาหาร"},{id:"guide",label:"🍽️ Food Guide"}].map(t => (
-                <button key={t.id} onClick={() => setNutTab(t.id)} style={{ flex:1, padding:"8px 0", borderRadius:9, border:"none", background:nutTab===t.id?"#162535":"transparent", color:nutTab===t.id?"#2dd4bf":"#5a8fa8", fontFamily:"inherit", fontSize:13, fontWeight:700, cursor:"pointer", transition:"all .2s" }}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Meals */}
-            {nutTab === "meals" && (
-              <div style={CARD}>
-                <div style={SEC}>แผนมื้ออาหารแนะนำ</div>
-                {result.meals.map((m,i) => (
-                  <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 0", borderBottom:i<result.meals.length-1?"1px solid #1e3a50":"none" }}>
-                    <div>
-                      <div style={{ fontWeight:700, fontSize:14 }}>{m.name}</div>
-                      <div style={{ fontSize:11, color:"#5a8fa8", marginTop:2 }}>{FOOD_SUGGESTIONS[form.goal][i % FOOD_SUGGESTIONS[form.goal].length]}</div>
-                    </div>
-                    <div style={{ textAlign:"right", flexShrink:0, marginLeft:10 }}>
-                      <div style={{ fontWeight:800, color:"#2dd4bf", fontSize:18 }}>{m.kcal}</div>
-                      <div style={{ fontSize:10, color:"#5a8fa8" }}>kcal · {m.pct}%</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* Food Guide */}
-            {nutTab === "guide" && (() => {
+            {(() => {
               const g = result.foodGuide;
               const cards = [
                 { icon:"🥩", title:"เนื้อสัตว์ (ชั่งดิบ)", border:"#f97316", badge:"#fff7ed", badgeText:"#ea580c", big:`${g.meatG}g`, sub:`≈ ${g.meatHandfuls} ฝ่ามือ`, items:null, trackKey:"meat", trackTarget:g.meatG, trackStep:25, trackUnit:"g" },
